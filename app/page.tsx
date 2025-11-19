@@ -1,195 +1,161 @@
-'use client';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight, Database, Brain, Target, Network } from 'lucide-react';
+import Navbar from './components/Navbar';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+const taskHighlights = [
+  {
+    title: 'Drug-Disease Matching (DDM)',
+    description: 'Identify high-confidence drug and disease relationships with contextual explanations grounded in PubMed evidence.',
+    icon: Network,
+  },
+  {
+    title: 'Drug Effectiveness Assessment (DEA)',
+    description: 'Evaluate drug outcomes, effectiveness signals, and clinical directions across large-scale biomedical corpora.',
+    icon: Brain,
+  },
+  {
+    title: 'Drug-Target Analysis (DTA)',
+    description: 'Trace molecular targets, pathways, and intervention strategies by mining structured triplets.',
+    icon: Target,
+  },
+];
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+const datasetLinks = [
+  {
+    name: 'DDM Dataset',
+    href: 'https://huggingface.co/datasets/Mike2481/UniD3_DDM',
+  },
+  {
+    name: 'DEA Dataset',
+    href: 'https://huggingface.co/datasets/Mike2481/UniD3_DEA',
+  },
+  {
+    name: 'DTA Dataset',
+    href: 'https://huggingface.co/datasets/Mike2481/UniD3_DTA',
+  },
+];
 
-export default function Chatbot() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Initialize welcome message on client side only
-  useEffect(() => {
-    setIsMounted(true);
-    setMessages([
-      {
-        id: '1',
-        role: 'assistant',
-        content: 'Hello! I\'m UniD3 chatbot. I can help you with questions about drug-disease relationships, drug effectiveness, and drug-target analysis based on our knowledge graph built from over 150,000 PubMed publications. How can I assist you today?',
-        timestamp: new Date(),
-      },
-    ]);
-  }, []);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      // Send current message along with recent conversation history for context
-      const recentMessages = messages.slice(-6); // Last 3 exchanges (6 messages: 3 user + 3 assistant)
-      const conversationHistory = recentMessages.map(msg => ({
-        role: msg.role,
-        content: msg.content,
-      }));
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          message: input,
-          history: conversationHistory,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
-      const data = await response.json();
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.answer || 'Sorry, I couldn\'t process your request.',
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Error:', error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'Sorry, there was an error processing your request. Please try again.',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
+export default function HomePage() {
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            UniD<sup>3</sup> Chatbot
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            LLM-driven Drug-Disease Dataset Construction via KG-RAG
-          </p>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-slate-900 dark:via-slate-950 dark:to-amber-950/20">
+      <Navbar />
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-md'
-                }`}
+      <main className="max-w-6xl mx-auto px-4 py-12 space-y-12">
+        {/* Hero */}
+        <section className="grid lg:grid-cols-2 gap-10 items-center">
+          <div className="space-y-6">
+            <div>
+              <p className="text-sm uppercase tracking-wide text-amber-700 dark:text-amber-400 font-semibold mb-2">
+                LLM-driven Biomedical Knowledge
+              </p>
+              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+                UniD<sup>3</sup>: Unified Drug-Disease Dataset Construction via KG-RAG
+              </h1>
+            </div>
+            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              UniD³ orchestrates Llama3.3-70B with Knowledge Graph Retrieval-Augmented Generation to transform over
+              150,000 PubMed articles into structured, high-fidelity biomedical datasets. Our dual-stage entity extraction
+              pipeline ensures consistent, noise-resistant graph construction.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/chat"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-amber-600 text-white font-semibold shadow-lg shadow-amber-600/30 hover:bg-amber-500 transition-colors"
               >
-                <div className="whitespace-pre-wrap break-words">{message.content}</div>
-                {isMounted && (
-                  <div
-                    className={`text-xs mt-2 ${
-                      message.role === 'user'
-                        ? 'text-blue-100'
-                        : 'text-gray-500 dark:text-gray-400'
-                    }`}
-                  >
-                    {message.timestamp.toLocaleTimeString()}
-                  </div>
-                )}
+                Start Chat
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/help"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-amber-200 text-amber-800 dark:text-amber-200 hover:bg-amber-100/40 dark:hover:bg-amber-900/30 transition-colors"
+              >
+                Documentation
+              </Link>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">150k+</p>
+                <p>PubMed publications</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">0.80+</p>
+                <p>F1 across tasks</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">0.9005</p>
+                <p>Expert F1 (DDM)</p>
               </div>
             </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-white dark:bg-gray-800 rounded-lg px-4 py-3 shadow-md">
-                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-
-      {/* Input Area */}
-      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex gap-2">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask a question about drug-disease relationships, drug effectiveness, or drug-target analysis..."
-              className="flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows={2}
-              disabled={isLoading}
-            />
-            <button
-              onClick={handleSend}
-              disabled={isLoading || !input.trim()}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-            >
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </button>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-            Press Enter to send, Shift+Enter for new line
-          </p>
-        </div>
-      </div>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-amber-100 dark:border-amber-900/40 p-4">
+            <Image
+              src="/unid3.png"
+              alt="UniD³ Architecture"
+              width={900}
+              height={650}
+              className="w-full h-auto rounded-xl"
+              priority
+            />
+          </div>
+        </section>
+
+        {/* Highlights */}
+        <section className="grid md:grid-cols-3 gap-6">
+          {taskHighlights.map((task) => {
+            const Icon = task.icon;
+            return (
+              <div
+                key={task.title}
+                className="rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-white/80 dark:bg-slate-900/60 p-6 shadow-lg"
+              >
+                <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
+                  <Icon className="w-6 h-6 text-amber-700 dark:text-amber-300" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{task.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{task.description}</p>
+              </div>
+            );
+          })}
+        </section>
+
+        {/* Knowledge Graph & CTA */}
+        <section className="grid lg:grid-cols-2 gap-8 items-center">
+          <div className="space-y-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Dual-Stage KG Construction</h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              UniD³ first performs paper-level extraction to capture localized research context, then promotes consistent
+              entities into a KG-level summary. LightRAG and custom prompts distill reliable triplets that fuel downstream QA
+              and dataset generation pipelines.
+            </p>
+            <Link
+              href="https://zenodo.org/records/15368180"
+              target="_blank"
+              className="inline-flex items-center gap-2 text-amber-700 dark:text-amber-300 font-semibold hover:underline"
+            >
+              <Database className="w-5 h-5" />
+              Access Knowledge Graph on Zenodo
+            </Link>
+          </div>
+          <div className="rounded-2xl border border-amber-100 dark:border-amber-900/30 bg-white dark:bg-slate-900 p-6 shadow-xl">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Datasets on HuggingFace</h3>
+            <div className="space-y-3">
+              {datasetLinks.map((dataset) => (
+                <a
+                  key={dataset.name}
+                  href={dataset.href}
+                  target="_blank"
+                  className="block rounded-xl border border-gray-200 dark:border-slate-700 px-4 py-3 hover:border-amber-400 dark:hover:border-amber-400 transition"
+                >
+                  <p className="font-semibold text-gray-900 dark:text-white">{dataset.name}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Login with HuggingFace account to download</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
+
