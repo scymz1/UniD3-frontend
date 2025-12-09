@@ -52,6 +52,7 @@ export default function ChatPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
 
@@ -62,19 +63,22 @@ export default function ChatPage() {
         content: msg.content,
       }));
 
-      const response = await fetch('/api/chat', {
+      // Direct call to Django backend
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${backendUrl}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: input,
+          message: currentInput,
           history: conversationHistory,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Backend API error: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -91,7 +95,9 @@ export default function ChatPage() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, there was an error processing your request. Please try again.',
+        content: error instanceof Error 
+          ? `Sorry, there was an error: ${error.message}` 
+          : 'Sorry, there was an error processing your request. Please try again.',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);

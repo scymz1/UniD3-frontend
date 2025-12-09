@@ -35,17 +35,12 @@ export default function ContactPage() {
             <div className="space-y-4 text-gray-700 dark:text-gray-300">
               <div>
                 <p className="font-semibold text-gray-900 dark:text-white">Qianqian Song, PhD</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Principal Investigator</p>
+                {/* <p className="text-sm text-gray-600 dark:text-gray-400">Principal Investigator</p> */}
               </div>
               
               <div>
-                <p className="font-medium text-gray-900 dark:text-white">Email:</p>
-                <a 
-                  href="mailto:qsong1@ufl.edu" 
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  qsong1@ufl.edu
-                </a>
+                <p className="font-medium text-gray-900 dark:text-white">Email: <a href="mailto:qsong1@ufl.edu" className="text-blue-600 dark:text-blue-400 hover:underline">qsong1@ufl.edu</a></p>
+
               </div>
 
               <div>
