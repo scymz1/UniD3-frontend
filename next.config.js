@@ -7,10 +7,10 @@ const nextConfig = {
   },
   // 彻底禁止 Next 使用 lightningcss
   compiler: {
-    css: {
+    // css: {
       // turbo css = lightningcss
-      turbo: false,
-    },
+      // turbo: false,
+    // },
   },
 };
 
